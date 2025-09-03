@@ -12,10 +12,10 @@ namespace MonogameTutorial
         private Texture2D _logo;
 
         // Defines the slime sprite.
-        private Sprite _slime;
+        private AnimatedSprite _slime;
 
         // Defines the bat sprite.
-        private Sprite _bat;
+        private AnimatedSprite _bat;
 
         public Game1() : base("My Game", 1280, 720, false)
         {
@@ -35,11 +35,11 @@ namespace MonogameTutorial
             TextureAtlas atlas = TextureAtlas.FromFile(Content, "Content/images/atlas-definition.xml");
 
             // Create the slime region from the atlas.
-            _slime = atlas.CreateSprite("slime");
+            _slime = atlas.CreateAnimatedSprite("slime-animation");
             _slime.Scale = new Vector2(4.0f, 4.0f);
 
             // Create the bat sprite from the atlas.
-            _bat = atlas.CreateSprite("bat");
+            _bat = atlas.CreateAnimatedSprite("bat-animation");
             _bat.Scale = new Vector2(4.0f, 4.0f);
         }
 
@@ -48,7 +48,11 @@ namespace MonogameTutorial
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            // Update the slime animated sprite.
+            _slime.Update(gameTime);
+
+            // Update the bat animated sprite.
+            _bat.Update(gameTime);
 
             base.Update(gameTime);
         }
