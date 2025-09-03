@@ -92,11 +92,8 @@ namespace MonoGameLibrary.Graphics
 
                     // The <Texture> element contains the content path for the Texture2D to load.
                     // So we will retrieve that value then use the content manager to load the texture.
-                    string texturePath = root.Element("Texture")?.Value ?? throw new Exception($"<Texture> element missing from atlas XML. filepath: {filePath}");;
-                    if (texturePath == null)
-                    {
-                        throw new Exception("Missing <Texture> element in XML file.");
-                    }
+                    string texturePath = root.Element("Texture")?.Value;
+                    
                     atlas.Texture = content.Load<Texture2D>(texturePath);
 
                     // The <Regions> element contains individual <Region> elements, each one describing
@@ -132,6 +129,15 @@ namespace MonoGameLibrary.Graphics
                     return atlas;
                 }
             }
+        }
+
+        // Creates a new sprite using the region from this texture atlas with the specified name.
+        // param name="regionName" - The name of the region to create the sprite with.
+        // returns - A new Sprite using the texture region with the specified name.
+        public Sprite CreateSprite(string regionName)
+        {
+            TextureRegion region = GetRegion(regionName);
+            return new Sprite(region);
         }
     }
 }
