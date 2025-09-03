@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace MonoGameLibrary.Graphics
 {
     // Represents a rectangular region within a texture
-    internal class TextureRegion
+    public class TextureRegion
     {
         // Gets or Sets the source texture this texture region is part of.
         public Texture2D Texture {  get; set; }
