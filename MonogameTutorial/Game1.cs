@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGameLibrary;
 using MonoGameLibrary.Graphics;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace MonogameTutorial
 {
@@ -23,6 +25,8 @@ namespace MonogameTutorial
         // Speed multiplier when moving.
         private const float MOVEMENT_SPEED = 5.0f;
 
+        private SimpleInputBuffer simpleInputBuffer;
+
         public Game1() : base("My Game", 1280, 720, false)
         {
             
@@ -31,7 +35,7 @@ namespace MonogameTutorial
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            simpleInputBuffer = new SimpleInputBuffer(_slimePosition, MOVEMENT_SPEED);
             base.Initialize();
         }
 
@@ -60,8 +64,11 @@ namespace MonogameTutorial
             // Update the bat animated sprite.
             _bat.Update(gameTime);
 
+            // Check keyboard input using input buffer
+            simpleInputBuffer.HandleKeyboardInput();
+
             // Check for keyboard inpuut and handle it.
-            CheckKeyboardInput();
+            //CheckKeyboardInput();
 
             // Check for gamepad input and handle it.
             CheckGamePadInput();
@@ -168,7 +175,7 @@ namespace MonogameTutorial
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
             // Draw the slime sprite.
-            _slime.Draw(SpriteBatch, _slimePosition);
+            _slime.Draw(SpriteBatch, simpleInputBuffer.EntityPosition);
 
             // Draw the bat sprite 10px to the right of the slime.
             _bat.Draw(SpriteBatch, new Vector2(_slime.Width + 10, 0));
