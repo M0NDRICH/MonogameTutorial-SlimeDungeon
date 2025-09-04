@@ -75,7 +75,7 @@ namespace MonoGameLibrary.Graphics
         // param name="spriteBatch" - The spritebatch instance used for batching draw calls.
         // param name="position" - The xy-coordinate location to draw this texture region on the screen.
         // param name="color" - The color mask to apply when drawing this texture region on screen.
-        // param name="rotation">The amount of rotation, in radians, to apply when drawing this texture region on screen.
+        // param name="rotation" - The amount of rotation, in radians, to apply when drawing this texture region on screen.
         // param name="origin" - The center of rotation, scaling, and position when drawing this texture region on screen.
         // param name="scale" - The amount of scaling to apply to the x- and y-axes when drawing this texture region on screen.
         // param name="effects" - Specifies if this texture region should be flipped horizontally, vertically, or both when drawing on screen.
