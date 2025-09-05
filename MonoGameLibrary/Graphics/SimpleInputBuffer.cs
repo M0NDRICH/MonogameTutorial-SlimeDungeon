@@ -53,23 +53,6 @@ namespace MonoGameLibrary.Graphics
                 newDirection = Vector2.UnitX;
             }
 
-            //if (keyboard.IsKeyUp(Keys.Up))
-            //{
-            //    newDirection = Vector2.Zero;
-            //}
-            //else if (keyboard.IsKeyUp(Keys.Down))
-            //{
-            //    newDirection = Vector2.Zero;
-            //}
-            //else if (keyboard.IsKeyUp(Keys.Left))
-            //{
-            //    newDirection = Vector2.Zero;
-            //}
-            //else if (keyboard.IsKeyUp(Keys.Right))
-            //{
-            //    newDirection = Vector2.Zero;
-            //}
-
             AddDirection(newDirection);
             Update();
         }
@@ -89,6 +72,7 @@ namespace MonoGameLibrary.Graphics
                 Vector2 nextDirection = _inputBuffer.Dequeue();
                 EntityPosition += nextDirection * Speed;
             }
+
         }
     }
 }
