@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using MonoGameLibrary;
 using MonoGameLibrary.Graphics;
 using MonoGameLibrary.Input;
@@ -35,6 +37,21 @@ namespace MonogameTutorial
 
         //private SimpleInputBuffer simpleInputBuffer;
 
+        // Defines the tilemap to draw.
+        private Tilemap _tilemap;
+
+        // Defines the bounds of the room that the slime and bat are contained within.
+        private Rectangle _roomBounds;
+
+        // The sound effect to play when the bat bounces off the edge of the screen.
+        private SoundEffect _bounceSoundEffect;
+
+        // The sound effect to play when the slime eats a bat.
+        private SoundEffect _collectSoundEffect;
+
+        // The background theme song
+        private Song _themeSong;
+
         public Game1() : base("My Game", 1280, 720, false)
         {
             
@@ -46,12 +63,28 @@ namespace MonogameTutorial
             //simpleInputBuffer = new SimpleInputBuffer(_slimePosition, MOVEMENT_SPEED);
             base.Initialize();
 
-            // Set the initial position of the bat to be 10px
-            // to the right of the slime.
-            _batPosition = new Vector2(_slime.Width + 10, 0);
+            Rectangle screenBounds = GraphicsDevice.PresentationParameters.Bounds;
+
+            _roomBounds = new Rectangle(
+                (int)_tilemap.TileWidth,
+                (int)_tilemap.TileHeight,
+                screenBounds.Width - (int)_tilemap.TileWidth * 2,
+                screenBounds.Height - (int)_tilemap.TileHeight * 2
+            );
+
+            // Initial slime position will be the center tile of the tile map.
+            int centerRow = _tilemap.Rows / 2;
+            int centerColumn = _tilemap.Columns / 2;
+            _slimePosition = new Vector2(centerColumn * _tilemap.TileWidth, centerRow * _tilemap.TileHeight);
+
+            // Initial bat position will be in the top left corner of the room
+            _batPosition = new Vector2(_roomBounds.Left, _roomBounds.Top);
 
             // Assign the initial random velocity to the bat.
             AssignRandomBatVelocity();
+
+            // Start playing the background music.
+            Audio.PlaySong(_themeSong);
         }
 
         protected override void LoadContent()
@@ -66,6 +99,19 @@ namespace MonogameTutorial
             // Create the bat sprite from the atlas.
             _bat = atlas.CreateAnimatedSprite("bat-animation");
             _bat.Scale = new Vector2(4.0f, 4.0f);
+
+            // Create the tilemap from the XML configuration file.
+            _tilemap = Tilemap.FromFile(Content, "images/tilemap-definition.xml");
+            _tilemap.Scale = new Vector2(4.0f, 4.0f);
+
+            // Load the bounce sound effect
+            _bounceSoundEffect = Content.Load<SoundEffect>("audio/bounce");
+
+            // Load the collect sound effect
+            _collectSoundEffect = Content.Load<SoundEffect>("audio/collect");
+
+            // Load the background theme music
+            _themeSong = Content.Load<Song>("audio/theme");
         }
 
         protected override void Update(GameTime gameTime)
@@ -82,15 +128,7 @@ namespace MonogameTutorial
             // Check for gamepad input and handle it.
             CheckGamePadInput();
 
-            // Create a bounding rectangle for the screen.
-            Rectangle screenBounds = new Rectangle(
-                0,
-                0,
-                GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsDevice.PresentationParameters.BackBufferHeight
-            );
-
-            // Creating a bounding circle for the slime
+            /// Creating a bounding circle for the slime
             Circle slimeBounds = new Circle(
                 (int)(_slimePosition.X + (_slime.Width * 0.5f)),
                 (int)(_slimePosition.Y + (_slime.Height * 0.5f)),
@@ -100,28 +138,28 @@ namespace MonogameTutorial
             // Use distance based checks to determine if the slime is within the
             // bounds of the game screen, and if it is outside that screen edge,
             // move it back inside.
-            if (slimeBounds.Left < screenBounds.Left)
+            if (slimeBounds.Left < _roomBounds.Left)
             {
-                _slimePosition.X = screenBounds.Left;
+                _slimePosition.X = _roomBounds.Left;
             }
-            else if (slimeBounds.Right > screenBounds.Right)
+            else if (slimeBounds.Right > _roomBounds.Right)
             {
-                _slimePosition.X = screenBounds.Right - _slime.Width;
-            }
-
-            if (slimeBounds.Top < screenBounds.Top)
-            {
-                _slimePosition.Y = screenBounds.Top;
-            }
-            else if (slimeBounds.Bottom > screenBounds.Bottom)
-            {
-                _slimePosition.Y = screenBounds.Bottom - _slime.Height;
+                _slimePosition.X = _roomBounds.Right - _slime.Width;
             }
 
-            // Calculate the new position of the bat based on the velocity.
+            if (slimeBounds.Top < _roomBounds.Top)
+            {
+                _slimePosition.Y = _roomBounds.Top;
+            }
+            else if (slimeBounds.Bottom > _roomBounds.Bottom)
+            {
+                _slimePosition.Y = _roomBounds.Bottom - _slime.Height;
+            }
+
+            // Calculate the new position of the bat based on the velocity
             Vector2 newBatPosition = _batPosition + _batVelocity;
 
-            // Create a bounding circle for the bat.
+            // Create a bounding circle for the bat
             Circle batBounds = new Circle(
                 (int)(newBatPosition.X + (_bat.Width * 0.5f)),
                 (int)(newBatPosition.Y + (_bat.Height * 0.5f)),
@@ -132,27 +170,27 @@ namespace MonogameTutorial
 
             // Use distance based checks to determine if the bat is within the
             // bounds of the game screen, and if it is outside that screen edge,
-            // reflect it about the screen edge normal.
-            if (batBounds.Left < screenBounds.Left)
+            // reflect it about the screen edge normal
+            if (batBounds.Left < _roomBounds.Left)
             {
                 normal.X = Vector2.UnitX.X;
-                newBatPosition.X = screenBounds.Left;
+                newBatPosition.X = _roomBounds.Left;
             }
-            else if (batBounds.Right > screenBounds.Right)
+            else if (batBounds.Right > _roomBounds.Right)
             {
                 normal.X = -Vector2.UnitX.X;
-                newBatPosition.X = screenBounds.Right - _bat.Width;
+                newBatPosition.X = _roomBounds.Right - _bat.Width;
             }
 
-            if (batBounds.Top < screenBounds.Top)
+            if (batBounds.Top < _roomBounds.Top)
             {
                 normal.Y = Vector2.UnitY.Y;
-                newBatPosition.Y = screenBounds.Top;
+                newBatPosition.Y = _roomBounds.Top;
             }
-            else if (batBounds.Bottom > screenBounds.Bottom)
+            else if (batBounds.Bottom > _roomBounds.Bottom)
             {
                 normal.Y = -Vector2.UnitY.Y;
-                newBatPosition.Y = screenBounds.Bottom - _bat.Height;
+                newBatPosition.Y = _roomBounds.Bottom - _bat.Height;
             }
 
             // If the normal is anything but Vector2.Zero, this means the bat had
@@ -162,20 +200,18 @@ namespace MonogameTutorial
             {
                 normal.Normalize();
                 _batVelocity = Vector2.Reflect(_batVelocity, normal);
+
+                // Playe the bounce sound effect
+                Audio.PlaySoundEffect(_bounceSoundEffect);
             }
 
             _batPosition = newBatPosition;
 
             if (slimeBounds.Intersects(batBounds))
             {
-                // Divide the width  and height of the screen into equal columns and
-                // rows based on the width and height of the bat.
-                int totalColumns = GraphicsDevice.PresentationParameters.BackBufferWidth / (int)_bat.Width;
-                int totalRows = GraphicsDevice.PresentationParameters.BackBufferHeight / (int)_bat.Height;
-
                 // Choose a random row and column based on the total number of each
-                int column = Random.Shared.Next(0, totalColumns);
-                int row = Random.Shared.Next(0, totalRows);
+                int column = Random.Shared.Next(1, _tilemap.Columns - 1);
+                int row = Random.Shared.Next(1, _tilemap.Rows - 1);
 
                 // Change the bat position by setting the x and y values equal to
                 // the column and row multiplied by the width and height.
@@ -183,6 +219,9 @@ namespace MonogameTutorial
 
                 // Assign a new random velocity to the bat
                 AssignRandomBatVelocity();
+
+                // Play the collect sound effect
+                Audio.PlaySoundEffect(_collectSoundEffect);
             }
 
             base.Update(gameTime);
@@ -234,6 +273,26 @@ namespace MonogameTutorial
             {
                 _slimePosition.X += speed;
             }
+
+            // If the M key is pressed, toggle mute state for audio.
+            if (Input.Keyboard.WasKeyJustPressed(Keys.M))
+            {
+                Audio.ToggleMute();
+            }
+
+            // If the + button is pressed, increase the volumne.
+            if (Input.Keyboard.WasKeyJustPressed(Keys.OemPlus))
+            {
+                Audio.SongVolume += 0.1f;
+                Audio.SoundEffectVolume += 0.1f;
+            }
+
+            // If the + button is pressed, increase the volumne.
+            if (Input.Keyboard.WasKeyJustPressed(Keys.OemMinus))
+            {
+                Audio.SongVolume -= 0.1f;
+                Audio.SoundEffectVolume -= 0.1f;
+            }
         }
 
         private void CheckGamePadInput()
@@ -246,11 +305,11 @@ namespace MonogameTutorial
             if (gamePadOne.IsButtonDown(Buttons.A))
             {
                 speed *= 1.5f;
-                gamePadOne.SetVibration(1.0f, TimeSpan.FromSeconds(1));
+                GamePad.SetVibration(PlayerIndex.One, 1.0f, 1.0f);
             }
             else
             {
-                gamePadOne.StopVibration();
+                GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
             }
 
             // Check thumbstick first since it has priority over which gamepad input
@@ -296,6 +355,9 @@ namespace MonogameTutorial
             // TODO: Add your drawing code here
             // Begin the sprite batch to prepare for rendering.
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
+
+            // Draw the tilemap.
+            _tilemap.Draw(SpriteBatch);
 
             // Draw the slime sprite.
             _slime.Draw(SpriteBatch, _slimePosition);
