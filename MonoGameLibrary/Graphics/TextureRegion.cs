@@ -26,6 +26,27 @@ namespace MonoGameLibrary.Graphics
         // Creaates a new texture region.
         public TextureRegion() { }
 
+        /// <summary>
+        /// Gets the top normalized texture coordinate of this region.
+        /// </summary>
+        public float TopTextureCoordinate => SourceRectangle.Top / (float)Texture.Height;
+
+        /// <summary>
+        /// Gets the bottom normalized texture coordinate of this region.
+        /// </summary>
+        public float BottomTextureCoordinate => SourceRectangle.Bottom / (float)Texture.Height;
+
+        /// <summary>
+        ///  Gets the left normalized texture coordinate of this region.
+        /// </summary>
+        public float LeftTextureCoordinate => SourceRectangle.Left / (float)Texture.Width;
+
+        /// <summary>
+        /// Gets the right normalized texture coordinate of this region.
+        /// </summary>
+        public float RightTextureCoordinate => SourceRectangle.Right / (float)Texture.Width;
+
+
         // Creates a new texture region using the specified source texture.
         // param name="texture" - The texture to use as the source texture for this texture region.
         // param name="x" - The x-coordinate position of the upper-left corner of this texture region relative to the upper-left corner of the source texture.

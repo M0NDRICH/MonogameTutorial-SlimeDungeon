@@ -95,6 +95,9 @@ namespace MonoGameLibrary
             // Mouse is visible by defaul.
             IsMouseVisible = true;
 
+            // Expand
+            
+
             // Exit on escape is true by default
             ExitOnEscape = true;
         }
